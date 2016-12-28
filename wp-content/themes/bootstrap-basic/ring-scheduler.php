@@ -75,8 +75,7 @@ $query_images = new WP_Query( $query_images_args );
 
                     <tr>
                       <form action="#" method="post">
-                      <td>
-                        <?php echo $user_post->post_title; ?></td>
+                      <td> <?php echo $user_post->post_title; ?></td>
                        <td><button type="button" class="btn btn-xs  btn-success">Monday</button></td>
                       <td>
                       <button class="btn btn-xs  btn-primary" type="button" data-toggle="modal" data-target="#myModal_<?php echo  $user_post->post_title ;?>" aria-expanded="false" aria-controls="collapseExample">
@@ -107,13 +106,13 @@ $unserialized_postcontent = unserialize($postcontent)   ;
 
 ?>
 
-
+<div class="row">
   <div class="col-md-2">
     <h6 >Assigned Day :</h6>
   </div>
 
   <div class="col-md-4">
-    <select class="assignation form-control" name="assignation">
+    <select class="assignation form-control " name="assignation">
       <option value=''>Select Day</option>
       <option value='monday' <?php echo $unserialized_postcontent['assignation'] == 'monday' ? 'selected="selected"' : ''; ?>>Monday</option>
       <option value='tuesday' <?php echo $unserialized_postcontent['assignation'] == 'tuesday' ? 'selected="selected"' : ''; ?> >Tuesday</option>
@@ -124,10 +123,52 @@ $unserialized_postcontent = unserialize($postcontent)   ;
       <option value='sunday' <?php echo $unserialized_postcontent['assignation'] == 'sunday' ? 'selected="selected"' : ''; ?>>Sunday</option>
     </select>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-6 modalbtns">
     <button type="submit" class="btn btn-success pull-right" name="submit" value="<?php echo  $user_post->post_title ;?>">Submit</button>
+    <button type="button" class="btn btn-info pull-right" data-toggle="collapse" data-target="#coll_<?php echo  $user_post->post_title ;?>">Copy From..</button>
+    <button type="submit" class="btn btn-default pull-right" name="submit">Clear All</button>
 
   </div>
+</div>
+
+<div class="clearfix">
+
+</div>
+  <div id="coll_<?php echo  $user_post->post_title ;?>" class="collapse">
+    <div class="row dupli">
+
+
+      <div class="col-md-6 nph">
+        <label style="float:right;margin-top:5px;" for="sel1">Select the schedule :</label>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+          <select class="form-control" id="sel1">
+            <option>Scheduleset1 </option>
+            <option>Scheduleset2</option>
+            <option>Scheduleset3</option>
+            <option>Scheduleset4</option>
+            <option>Scheduleset5</option>
+            <option>Scheduleset6</option>
+            <option>Scheduleset7</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-block btn-success pull-right" >Save  </button>
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+
+  <div  class="modal fade" role="dialog" id="DupModal_<?php echo  $user_post->post_title ;?>">
+  <div class="modal-dialog">
+  </div>
+</div>
   <hr>
 
 
@@ -153,7 +194,7 @@ $unserialized_postcontent = unserialize($postcontent)   ;
                  </td>
 
                  <td>
-                   <input type="text" class="timepicker timefield form-control input-sm " value="<?php echo $value['time'];?>" id="time_<?php echo $key;?>" name="timings[<?php echo $key;?>][time]">
+                   <input type="text" class="timepicker timefield form-control input-sm" value="<?php echo $value['time'];?>" id="time_<?php echo $key;?>" name="timings[<?php echo $key;?>][time]">
                  </td>
 
                  <td>
@@ -243,11 +284,13 @@ $unserialized_postcontent = unserialize($postcontent)   ;
 
 
 
- <script type="text/javascript">
 
- jQuery(document).ready(function(){
-   console.log("sdfsdf");
-   jQuery('.timepicker').timepicker({
+  <?php get_footer(); ?>
+
+  <script type="text/javascript">
+
+  jQuery(document).ready(function(){
+    jQuery('.timepicker').timepicker({
  timeFormat: 'h:mm p',
  interval: 1,
  minTime: '10',
@@ -258,12 +301,9 @@ $unserialized_postcontent = unserialize($postcontent)   ;
  scrollbar: true,
  zindex:1051
  });
- });
+  });
 
 
 
 
- </script>
-
-
-  <?php get_footer(); ?>
+  </script>
