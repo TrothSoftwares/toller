@@ -295,7 +295,19 @@ body
 {
 	padding: 4px ;
 }
-
-.ui-timepicker-container{
-	z-index: 1051 !important
+.modalbtns button
+{
+	margin: 0px 5px;
+}
+.dupli
+{
+	padding-top: 15px;
+}
+.dupli .form-group {
+    margin-bottom: 0px;
+}
+.nph
+{
+	margin-left: 0px !important;
+	margin-right: 0px !important;
 }
