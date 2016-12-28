@@ -235,3 +235,45 @@ function restict_mime($mimes) {
 }
 
 /****************   END OF CODE FOR RESTRICTING AUDIO FILES TO MP3 *************/
+
+
+
+/****************   START OF CODE FOR ALTERING USER FILEDS IN NEW USER REGISTRATION  *************/
+
+//REMOVE ROLES
+if( get_role('subscriber') ){
+      remove_role( 'subscriber' );
+}
+if( get_role('contributor') ){
+      remove_role( 'contributor' );
+}
+if( get_role('editor') ){
+      remove_role( 'editor' );
+}
+
+//DEFAULT ROLE AS AUTHOR
+add_filter('pre_option_default_role', function($default_role){
+    // You can also add conditional tags here and return whatever
+    return 'author'; // This is changed
+    return $default_role; // This allows default
+});
+
+
+// CHANGE AUTHOR ROLE AS CLIENT
+function change_role_name() {
+    global $wp_roles;
+
+    if ( ! isset( $wp_roles ) )
+        $wp_roles = new WP_Roles();
+
+    //You can list all currently available roles like this...
+    //$roles = $wp_roles->get_names();
+    //print_r($roles);
+
+    //You can replace "administrator" with any other role "editor", "author", "contributor" or "subscriber"...
+    $wp_roles->roles['author']['name'] = 'Client';
+    $wp_roles->role_names['author'] = 'Client';
+}
+add_action('init', 'change_role_name');
+
+/****************   END OF CODE FOR ALTERING USER FILEDS IN NEW USER REGISTRATION  *************/

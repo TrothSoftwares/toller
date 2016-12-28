@@ -283,6 +283,8 @@ function save_custom_user_profile_fields($user_id){
    update_usermeta($user_id, 'warranty', $_POST['warranty']);
    update_usermeta($user_id, 'userstatus', $_POST['userstatus']);
 
+
+
 }
 add_action('user_register', 'save_custom_user_profile_fields');
 
