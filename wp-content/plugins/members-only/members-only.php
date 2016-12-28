@@ -1,375 +1,17 @@
 <?php
-    /*
-    Plugin Name: TollerApp
-    Plugin URI: http://www.meembit.com
-    Description: Plugin for implementing toller app functions
-    Author: Mohammed Talha
-    Version: 1.0
-    Author URI: http://www.alfikri.in
-    */
-
-    // Removes from admin menu
-
-
-
-    add_action( 'admin_menu', 'my_remove_admin_menus' );
-    function my_remove_admin_menus() {
-        remove_menu_page( 'edit-comments.php' );
-    }
-    // Removes from post and pages
-    add_action('init', 'remove_comment_support', 100);
-
-    function remove_comment_support() {
-        remove_post_type_support( 'post', 'comments' );
-        remove_post_type_support( 'page', 'comments' );
-    }
-    // Removes from admin bar
-    function mytheme_admin_bar_render() {
-        global $wp_admin_bar;
-        $wp_admin_bar->remove_menu('comments');
-    }
-    add_action( 'wp_before_admin_bar_render', 'mytheme_admin_bar_render' );
-
-
-
-
-
-
-
-
-
-function toller_admin() {
-    include('toller.php');
-}
-function toller_admin_actions() {
-    add_menu_page("Toller", "Toller" ,'read', "Toller", "toller_admin");
-}
-add_action('admin_menu', 'toller_admin_actions');
-
-define('TOLLER_PLUGIN_URL', plugin_dir_url( __FILE__ ));
-
-
-function timepicker(){
-  wp_register_style('kv_js_time_style' , TOLLER_PLUGIN_URL. 'css/jquery.timepicker.css');
-	wp_enqueue_style('kv_js_time_style');
-  wp_enqueue_script('time-picker',TOLLER_PLUGIN_URL. 'js/jquery.timepicker.js');
-
-wp_enqueue_script('jquery-ui-datepicker');
-wp_register_style('jquery-ui', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css');
-wp_enqueue_style('jquery-ui');
-
-}
-
-add_action('admin_head', 'timepicker');
-
-
-
-
-
-if(isset($_POST['Scheduleset1'])){
-  // print_r($_POST);
-  // exit;
-
-   $serializedpost =  serialize($_POST);
-   $my_post = array(
-       'ID'           => $_POST['postid'],
-       'post_content' => $serializedpost,
-   );
-
- // Update the post into the database
-   wp_update_post( $my_post );
-  //  $serializedpost =  serialize($_POST);
-
-}
-
-
-
-
-
-
-
-//*****************   CODE FOR USER INFO WIDGET  ***********//
-
-
-
-// Creating the widget
-class wpb_widget extends WP_Widget {
-
-  function __construct() {
-    parent::__construct(
-    // Base ID of your widget
-    'wpb_widget',
-
-    // Widget name will appear in UI
-    __('User Info Widget', 'wpb_widget_domain'),
-
-    // Widget description
-    array( 'description' => __( 'Widget displaying user information', 'wpb_widget_domain' ), )
-  );
-}
-
-// Creating widget front-end
-// This is where the action happens
-public function widget( $args, $instance ) {
-  $title = apply_filters( 'widget_title', $instance['title'] );
-  // before and after widget arguments are defined by themes
-  echo $args['before_widget'];
-  if ( ! empty( $title ) )
-  echo $args['before_title'] . $title . $args['after_title'];
-
-  // This is where you run the code and display the output
-  $userid = get_current_user_id();
-    $userdata = ( get_userdata($userid));
-
-    // print_r($userdata);
-
-    echo '<table>
-    <tr>
-    <td>Name:</td>
-    <td>'.$userdata->display_name.'</td>
-    </tr>
-    <tr>
-    <td>Type</td>
-    <td></td>
-    </tr>
-    <tr>
-    <td>Address :</td>
-    <td>'.get_the_author_meta( 'address', $userid ).'</td>
-    </tr>
-    <tr>
-    <td>Date of Installation:</td>
-    <td>'.get_the_author_meta( 'dateofinstallation', $userid ).'</td>
-    </tr>
-    <tr>
-    <td>Contact:</td>
-    <td>'.get_the_author_meta( 'contact1', $userid ).'<br>'.get_the_author_meta( 'contact2', $userid ).'</td>
-    </tr>
-    <tr>
-    <td>Warranty</td>
-    <td>'.get_the_author_meta( 'warranty', $userid ).'</td>
-    </tr>
-    <tr>
-    <td>User Status</td>
-    <td>'.get_the_author_meta( 'userstatus', $userid ).'<br>'.get_the_author_meta( 'userstatus', $userid ).'</td>
-    </tr>
-    </table>
-    ';
-
-
-   echo $args['after_widget'];
-}
-
-// Widget Backend
-public function form( $instance ) {
-  if ( isset( $instance[ 'title' ] ) ) {
-    $title = $instance[ 'title' ];
-  }
-  else {
-    $title = __( 'New title', 'wpb_widget_domain' );
-  }
-  // Widget admin form
-  ?>
-  <p>
-    <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
-    <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
-  </p>
-  <?php
-}
-
-// Updating widget replacing old instances with new
-public function update( $new_instance, $old_instance ) {
-  $instance = array();
-  $instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
-  return $instance;
-}
-} // Class wpb_widget ends here
-
-// Register and load the widget
-function wpb_load_widget() {
-  register_widget( 'wpb_widget' );
-}
-add_action( 'widgets_init', 'wpb_load_widget' );
-
-
-//************ END OF CODE FOR USER INFO WIDGET  ****************//
-
-
-
-
-
-
-//************ START OF CODE FOR CUSTOM FIELDS IN USER REGISTRATION  ****************//
-
-
-
-
-function custom_user_profile_fields($user){
-   ?>
-   <h3>Extra profile information</h3>
-   <table class="form-table">
-       <tr>
-           <th><label for="address">address</label></th>
-           <td>
-               <input type="text" class="regular-text" name="address" value="<?php echo esc_attr( get_the_author_meta( 'address', $user->ID ) ); ?>" id="address" /><br />
-           </td>
-       </tr>
-
-       <tr>
-           <th><label for="contact1">Contact No 1:</label></th>
-           <td>
-               <input type="text" class="regular-text" name="contact1" value="<?php echo esc_attr( get_the_author_meta( 'contact1', $user->ID ) ); ?>" id="contact1" /><br />
-           </td>
-       </tr>
-       <tr>
-           <th><label for="contact2">Contact No 2:</label></th>
-           <td>
-               <input type="text" class="regular-text" name="contact2" value="<?php echo esc_attr( get_the_author_meta( 'contact2', $user->ID ) ); ?>" id="contact2" /><br />
-           </td>
-       </tr>
-       <tr>
-           <th><label for="dyndns">Dyn DNS</label></th>
-           <td>
-               <input type="text" class="regular-text" name="dyndns" value="<?php echo esc_attr( get_the_author_meta( 'dyndns', $user->ID ) ); ?>" id="dyndns" /><br />
-           </td>
-       </tr>
-         <tr>
-             <th><label for="port">Port</label></th>
-             <td>
-                 <input type="text" class="regular-text" name="port" value="<?php echo esc_attr( get_the_author_meta( 'port', $user->ID ) ); ?>" id="port" /><br />
-             </td>
-         </tr>
-         <tr>
-             <th><label for="dateofinstallation">Date Of Installation</label></th>
-             <td>
-                 <input type="date" class="regular-text" name="dateofinstallation" value="<?php echo esc_attr( get_the_author_meta( 'dateofinstallation', $user->ID ) ); ?>" id="dateofinstallation" /><br />
-
-
-             </td>
-         </tr>
-         <tr>
-             <th><label for="warranty">Warranty Period</label></th>
-             <td>
-                 <input type="text" class="regular-text" name="warranty" value="<?php echo esc_attr( get_the_author_meta( 'warranty', $user->ID ) ) ? esc_attr( get_the_author_meta( 'warranty', $user->ID ) ):'18 Months';  ?>" id="warranty" /><br />
-             </td>
-         </tr>
-         <tr>
-             <th><label for="userstatus">User Status</label></th>
-             <td>
-                 <input type="checkbox" class="regular-text" name="userstatus" checked="<?php echo esc_attr( get_the_author_meta( 'userstatus', $user->ID ) )  == 'on' ? 'true':'false'  ?>" id="userstatus" /><br />
-             </td>
-         </tr>
-   </table>
-<?php
-}
-add_action( 'show_user_profile', 'custom_user_profile_fields' );
-add_action( 'edit_user_profile', 'custom_user_profile_fields' );
-add_action( "user_new_form", "custom_user_profile_fields" );
-
-function save_custom_user_profile_fields($user_id){
-   # again do this only if you can
-   if(!current_user_can('manage_options'))
-       return false;
-
-
-
-   # save my custom field
-   update_usermeta($user_id, 'company', $_POST['company']);
-   update_usermeta($user_id, 'address', $_POST['address']);
-   update_usermeta($user_id, 'contact1', $_POST['contact1']);
-   update_usermeta($user_id, 'contact2', $_POST['contact2']);
-   update_usermeta($user_id, 'dyndns', $_POST['dyndns']);
-   update_usermeta($user_id, 'port', $_POST['port']);
-   update_usermeta($user_id, 'dateofinstallation', $_POST['dateofinstallation']);
-   update_usermeta($user_id, 'warranty', $_POST['warranty']);
-   update_usermeta($user_id, 'userstatus', $_POST['userstatus']);
-
-
-
-}
-add_action('user_register', 'save_custom_user_profile_fields');
-
-
-//************ END OF  CODE FOR CUSTOM FIELDS IN USER REGISTRATION  ****************//
-
-
-
-
-
-
-
-
-/****************** START OF CODE FOR MEDIA UPLOADER IN FRONTEND   ************/
-
-
-add_action( 'wp_enqueue_scripts',  'enqueue_scripts' ) ;
-add_filter( 'ajax_query_attachments_args',  'filter_media' ) ;
-add_shortcode( 'the_dramatist_front_upload',  'the_dramatist_front_upload' ) ;
-
-/**
- * Call wp_enqueue_media() to load up all the scripts we need for media uploader
- */
-function enqueue_scripts() {
-
-    wp_enqueue_media();
-    wp_enqueue_script(
-        'some-script',
-        get_template_directory_uri() . '/js/media-uploader.js',
-        // if you are building a plugin
-        // plugins_url( '/', __FILE__ ) . '/js/media-uploader.js',
-        array( 'jquery' ),
-        null
-    );
-}
-/**
- * This filter insures users only see their own media
- */
-function filter_media( $query ) {
-    // admins get to see everything
-    if ( ! current_user_can( 'manage_options' ) )
-        $query['author'] = get_current_user_id();
-    return $query;
-}
-function the_dramatist_front_upload( $args ) {
-    // check if user can upload files
-
-
-     if ( current_user_can( 'upload_files' ) ) {
-
-    return '
-    <button  id="frontend-button" class="btn btn-default pull-right" type="button">
-      <em class="glyphicon glyphicon-folder-open"></em> Audio Library
-    </button>';
-
-
-  }
-    return __( 'Please Login To Upload', 'frontend-media' );
-}
-
-
-/****************** END FOR CODE FOR MEDIA UPLOADER IN FRONTEND     ******/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/********************** START OF MEMBERS ONLY PLUGIN    *******************/
-
+/* 
+Plugin Name: Members Only
+Plugin URI:  http://code.andrewhamilton.net/wordpress/plugins/members-only/
+Description: A plugin that allows you to make your WordPress blog only viewable to users that are logged in. If a visitor is not logged in, they will be redirected either to the WordPress login page or a page of your choice. Once logged in they can be redirected back to the page that they originally requested. You can also protect your Feeds whilst allowing registered user access to them by using <em>Feed Keys</em>.
+Version: 0.6.7
+Author: Andrew Hamilton
+Author URI: http://andrewhamilton.net
+Licensed under the The GNU General Public License 2.0 (GPL) http://www.gnu.org/licenses/gpl.html
+*/ 
+
+//----------------------------------------------------------------------------
+//		SETUP FUNCTIONS & GLOBAL VARIABLES
+//----------------------------------------------------------------------------
 
 register_activation_hook(__FILE__,'members_only_setup_options');
 
@@ -409,20 +51,20 @@ $errormsg = array(
 function members_only_setup_options()
 {
 	global $members_only_opt;
-
+	
 	$members_only_version = get_option('members_only_version'); //Members Only Version Number
 	$members_only_this_version = '0.6.7';
-
+	
 	// Check the version of Members Only
 	if (empty($members_only_version))
 	{
 		add_option('members_only_version', $members_only_this_version);
-	}
+	} 
 	elseif ($members_only_version != $members_only_this_version)
 	{
 		update_option('members_only_version', $members_only_this_version);
 	}
-
+	
 	// Setup Default Options Array
 	$optionarray_def = array(
 		'members_only' => FALSE,
@@ -435,10 +77,10 @@ function members_only_setup_options()
 		'require_feedkeys' => FALSE,
 		'one_time_view_ip' => NULL
 	);
-
+		
 	if (empty($members_only_opt)){ //If there aren't already options for Members Only
 		add_option('members_only_options', $optionarray_def, 'Members Only Wordpress Plugin Options');
-	}
+	}	
 }
 
 //Detect WordPress version to add compatibility with 2.3 or higher
@@ -462,23 +104,23 @@ function members_only_add_options_page()
 //---------------------------------------------------------------------------
 
 function members_only_display_feedkey()
-{
+{	
 	global $profileuser, $current_user, $blogurl, $members_only_opt, $errormsg;
-
+	
 	// Setup Feed Key Reset Options
 	$feedkey_reset_types = array(
 	'Feed Key Options...' => NULL,
 	'Reset Feed Key' => 'feedkey-reset',
 	'Remove Feed Key' => 'feedkey-remove'
 	);
-
+	
 	foreach ($feedkey_reset_types as $option => $value) {
 		if ($value == $optionarray_def['login_redirect_to']) {
 				$selected = 'selected="selected"';
 		} else {
 				$selected = '';
 		}
-
+		
 		$feedkey_reset_options .= "\n\t<option value='$value' $selected>$option</option>";
 	}
 
@@ -487,13 +129,13 @@ function members_only_display_feedkey()
 		$yourprofile = $profileuser->ID == $current_user->ID;
 		$feedkey = get_usermeta($profileuser->ID,'feed_key');
 		$permalink_structure = get_option(permalink_structure);
-
+		
 		//Check if Permalinks are being used
 		empty($permalink_structure) ? $feedjoin = '?feed=rss2&feedkey=' : $feedjoin = '/feed/?feedkey=';
-
+		
 		$feedurl = $blogurl.$feedjoin.$feedkey;
 		$feedurl = '<a href="'.$feedurl.'">'.$feedurl.'</a>';
-
+		
 		?>
 		<table class="form-table">
 			<h3><?php echo $yourprofile ? _e("Your Feed Key", 'feed-key') : _e("User's Feed Key", 'feed-key') ?></h3>
@@ -501,7 +143,7 @@ function members_only_display_feedkey()
 				<th><label for="feedkey">Feed Key</label></th>
 				<td width="250px"><?php echo empty($feedkey) ? _e('<em>'.$errormsg['feedkey_notgen'].'</em>') : _e($feedkey); ?></td>
 				<td>
-
+				
 				<?php if ($members_only_opt ['feedkey_reset'] == TRUE && !$current_user->has_cap('level_9')) : ?>
 					<input name="feedkey-reset" type="checkbox" id="feedkey-reset_inp" value="0" /> Reset Key
 				<?php elseif ($current_user->has_cap('level_9')) : ?>
@@ -533,20 +175,20 @@ function members_only_display_feedkey()
 function members_only()
 {
 	global $currenturl, $members_only_opt, $feedkey_valid, $errormsg, $userdata, $current_user, $wpurl;
-
+	
 	//Get Redirect
 	$redirection = members_only_createredirect();
-
+	
 	if (md5($_SERVER['REMOTE_ADDR']) == $members_only_opt['one_time_view_ip'] && XMLRPC_REQUEST)	//Check for one-time allowed IP address
 	{
 		//Remove IP and Update Settings
 		$members_only_opt['one_time_view_ip'] = NULL;
 		update_option('members_only_options', $members_only_opt);
-
+		
 		//Do Nothing
 	}
 	elseif (empty($userdata->ID)) //Check if user is logged in
-	{
+	{		
 		if (is_feed()) //Check if URL is a Feed
 		{
 			if (empty($_GET['feedkey']) && $members_only_opt['feed_access'] == 'feedkeys')
@@ -556,7 +198,7 @@ function members_only()
 				echo $feed;
 				exit;
 			}
-			elseif ($feedkey_valid == FALSE && $members_only_opt['feed_access'] == 'feedkeys')
+			elseif ($feedkey_valid == FALSE && $members_only_opt['feed_access'] == 'feedkeys') 
 			{
 				$feed = members_only_create_feed('Feed Key is Invalid', $errormsg['feedkey_invalid']);
 				header("Content-Type: application/xml; charset=ISO-8859-1");
@@ -572,17 +214,17 @@ function members_only()
 				members_only_redirect($redirection);
 			}
 		}	// Check if whether we are...
-		elseif ($currenturl == $redirection || //...at the redirection page without a trailing slash
+		elseif ($currenturl == $redirection || //...at the redirection page without a trailing slash 
 				$currenturl == $redirection.'/' //...at the redirection page with a trailing slash
-				)
+				) 		
 		{
 			// Do Nothing
 		}
-		else
+		else 
 		{
 			//Redirect Page
 			members_only_redirect($redirection);
-		}
+		}		
 	}
 	else //User is logged in
 	{
@@ -595,7 +237,7 @@ function members_only()
 				echo $feed;
 				exit;
 			}
-			elseif ($feedkey_valid == FALSE)
+			elseif ($feedkey_valid == FALSE) 
 			{
 				$feed = members_only_create_feed('Feed Key is Invalid', $errormsg['feedkey_invalid']);
 				header("Content-Type: application/xml; charset=ISO-8859-1");
@@ -605,7 +247,7 @@ function members_only()
 			elseif ($feedkey_valid == TRUE)
 			{
 				// Do Nothing
-			}
+			} 
 		}
 	}
 }
@@ -617,18 +259,18 @@ function members_only()
 function members_only_init()
 {
 	global $userdata, $currenturl, $feedkey_valid, $feed_redirected, $errormsg, $members_only_opt, $wpdb;
-
+	
 	//Get Redirect
 	$redirection = members_only_createredirect();
-
+	
 	//Parse URL
 	$parsed_url = parse_url($currenturl);
-
+	
 	if (!empty($userdata->ID)) // If user is logged in
 	{
 		//Get User's Feed key
 		$feedkey = get_usermeta($userdata->ID,'feed_key');
-
+		
 		//If there isn't one then generate one
 		if (empty($feedkey))
 		{
@@ -636,24 +278,24 @@ function members_only_init()
 			update_usermeta($userdata->ID, 'feed_key', $feedkey);
 		}
 	}
-
+	
 	if (empty($userdata->ID) && $members_only_opt['feed_access'] != 'feednone')  //Check if user is logged in or Feed Keys is required
 	{
 		$feedkey = $_GET['feedkey'];
-
+		
 		if (!empty($feedkey))
-		{
+		{		
 			// Check if Feed Key is in the Database
 			$find_feedkey = $wpdb->get_results("SELECT umeta_id FROM $wpdb->usermeta WHERE meta_value = '$feedkey'");
-
+			
 			if (!empty($find_feedkey) && $members_only_opt['feed_access'] == 'feedkeys') //If Feed Key is found and using Feed Keys
 			{
 				$feedkey_valid = TRUE;
 			}
 		}
-
+		
 		//WordPress Feed Files
-		switch (basename($_SERVER['PHP_SELF']))
+		switch (basename($_SERVER['PHP_SELF'])) 
 		{
 			case 'wp-rss.php':
 			case 'wp-rss2.php':
@@ -682,7 +324,7 @@ function members_only_init()
 				}
 				break;
 		}
-
+	
 		//WordPress Feed Queries
 		switch ($_GET['feed'])
 		{
@@ -721,19 +363,19 @@ function members_only_init()
 function members_only_createredirect()
 {
 	global $members_only_opt, $members_only_reqpage, $blogurl, $wpurl;
-
+	
 	//Check redirection settings
 	//If redirecting to login page or specified page is blank
-	if ($members_only_opt['redirect_to'] == 'login' || $members_only_opt['redirect_to'] == 'specifypage' && $members_only_opt['redirect_url'] == '')
+	if ($members_only_opt['redirect_to'] == 'login' || $members_only_opt['redirect_to'] == 'specifypage' && $members_only_opt['redirect_url'] == '')	
 	{
 		$output = "/wp-login.php";
-
+		
 		if ($members_only_opt['redirect'] == TRUE) //If redirecting to original page after logging in
 		{
 			$output .= "?redirect_to=";
 			$output .= $members_only_reqpage;
 		}
-
+		
 		$output = $wpurl.$output;
 	}
 	elseif ($members_only_opt['redirect_to'] == 'specifypage' && $members_only_opt['redirect_url'] != '') //If redirecting to specific page
@@ -765,18 +407,18 @@ function members_only_redirect($redirection)
 function members_only_gen_feedkey()
 {
 	global $userdata;
-
+	
 	$charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; //Key Character Set
 	$keylength = 32; //Key Length
 
-	for ($i=0; $i<$keylength; $i++)
+	for ($i=0; $i<$keylength; $i++) 
 	{
 		$key .= $charset[(mt_rand(0,(strlen($charset)-1)))];
 	}
-
+	
 	//Hash key against user login to make sure no two users can ever have the same key
 	$hashedkey = md5($userdata->user_login.$key);
-
+	
 	return $hashedkey;
 }
 
@@ -785,15 +427,15 @@ function members_only_gen_feedkey()
 //----------------------------------------------------------------------------
 
 function members_only_reset_feedkey()
-{
+{	
 	$id = $_POST['user_id'];
-
+	
 	if ($_POST['feedkey-reset'] != NULL || $_POST['feedkey-generate'] != NULL || $_POST['feedkey-reset-admin'] == 'feedkey-reset') //If the reset or generate check box is checked
 	{
 		$feedkey = members_only_gen_feedkey();
 		update_usermeta($id, 'feed_key', $feedkey);
 	}
-
+	
 	if ($_POST['feedkey-reset-admin'] == 'feedkey-remove')
 	{
 		$feedkey = NULL;
@@ -806,14 +448,14 @@ function members_only_reset_feedkey()
 //----------------------------------------------------------------------------
 
 function members_only_create_feed($item_title, $item_description)
-{
+{	
 	global $blogtitle, $blogurl;
-
+	
 	$today = date('F j, Y G:i:s T');
-
-	$feed_content = '<?xml version="1.0" encoding="ISO-8859-1" ?>
-					<rss version="2.0">
-						<channel>
+	
+	$feed_content = '<?xml version="1.0" encoding="ISO-8859-1" ?> 
+					<rss version="2.0"> 
+						<channel> 
 							<title>'.$blogtitle.'</title>
 							<link>'.$blogurl.'</link>
 							<item>
@@ -824,7 +466,7 @@ function members_only_create_feed($item_title, $item_description)
 							</item>
 						</channel>
 					</rss>';
-
+					
 	return $feed_content;
 }
 
@@ -834,8 +476,8 @@ function members_only_create_feed($item_title, $item_description)
 
 function members_only_login_redirect() {
 	global $redirect_to, $members_only_opt;
-
-	if (!isset($_GET['redirect_to']) && $members_only_opt['login_redirect_to'] == 'frontpage')
+	
+	if (!isset($_GET['redirect_to']) && $members_only_opt['login_redirect_to'] == 'frontpage') 
 	{
 		$redirect_to = get_option('siteurl');
 	}
@@ -850,17 +492,17 @@ function members_only_options_page()
 	global $wpdb, $wpversion;
 
 	if (isset($_POST['submit']) ) {
-
+	
 		if ($_POST['one_time_view_ip'] == 1)
 		{
-
+			
 			$one_time_view_ip = md5($_SERVER['REMOTE_ADDR']);
 		}
 		else
 		{
 			$one_time_view_ip = NULL;
 		}
-
+		
 	// Options Array Update
 	$optionarray_update = array (
 		'members_only' => $_POST['members_only'],
@@ -873,59 +515,59 @@ function members_only_options_page()
 		'require_feedkeys' => $_POST['require_feedkeys'],
 		'one_time_view_ip' => $one_time_view_ip
 	);
-
+	
 	update_option('members_only_options', $optionarray_update);
 	}
-
+	
 	// Get Options
 	$optionarray_def = get_option('members_only_options');
-
+	
 	// Setup Redirection Options
 	$redirecttypes = array(
 	'Login Page' => 'login',
 	'Specific Page' => 'specifypage'
 	);
-
+	
 	foreach ($redirecttypes as $option => $value) {
 		if ($value == $optionarray_def['redirect_to']) {
 				$selected = 'selected="selected"';
 		} else {
 				$selected = '';
 		}
-
+		
 		$redirectoptions .= "\n\t<option value='$value' $selected>$option</option>";
 	}
-
+	
 	// Setup Login Redirection Options
 	$loginredirecttypes = array(
 	'Dashboard' => 'dashboard',
 	'Front Page' => 'frontpage'
 	);
-
+	
 	foreach ($loginredirecttypes as $option => $value) {
 		if ($value == $optionarray_def['login_redirect_to']) {
 				$selected = 'selected="selected"';
 		} else {
 				$selected = '';
 		}
-
+		
 		$login_redirectoptions .= "\n\t<option value='$value' $selected>$option</option>";
 	}
-
+	
 	// Setup Feed Access Options
 	$feedaccesstypes = array(
 	'Use Feed Keys' => 'feedkeys',
 	'Require User Login' => 'feedlogin',
 	'Open Feeds' => 'feednone'
 	);
-
+	
 	foreach ($feedaccesstypes as $option => $value) {
 		if ($value == $optionarray_def['feed_access']) {
 				$selected = 'selected="selected"';
 		} else {
 				$selected = '';
 		}
-
+		
 		$feedprotectionoptions .= "\n\t<option value='$value' $selected>$option</option>";
 	}
 
@@ -935,7 +577,7 @@ function members_only_options_page()
 	<form method="post" action="<?php echo $_SERVER['PHP_SELF'] . '?page=' . basename(__FILE__); ?>&updated=true">
 	<fieldset class="options" style="border: none">
 	<p>
-	Checking the <em>Members Only</em> option below will make your blog only viewable to users that are logged in. If a visitor is not logged in,
+	Checking the <em>Members Only</em> option below will make your blog only viewable to users that are logged in. If a visitor is not logged in, 
 	they will be redirected to the WordPress login page or a page that you can specify. Once logged in they can be redirected back to the page that they originally requested if you choose to.
 	</p>
 	<table width="100%" <?php $wpversion >= 2.5 ? _e('class="form-table"') : _e('cellspacing="2" cellpadding="5" class="editform"'); ?> >
@@ -959,9 +601,9 @@ function members_only_options_page()
 			<td><span style="color: #555; font-size: .85em;">Choose whether once logged in, the user returns to the originally requested page <em>(Only applies if your redirecting to the login page)</em></span></td>
 		</tr>
 		<tr valign="top">
-			<th scope="row">Redirection Page</th>
+			<th scope="row">Redirection Page</th> 
 			<td colspan="2"><?php bloginfo('url');?>/<input type="text" name="redirect_url" id="redirect_url_inp" value="<?php echo $optionarray_def['redirect_url']; ?>" size="35" /><br />
-			<span style="color: #555; font-size: .85em;">If the field is left blank, users will be redirected to the login page instead.
+			<span style="color: #555; font-size: .85em;">If the field is left blank, users will be redirected to the login page instead. 
 			<em>(Only applies if your redirecting to the specific page)</em></span></span>
 			</td>
 		</tr>
@@ -1023,6 +665,4 @@ if ($members_only_opt['members_only'] == TRUE) //Check if Members Only is Active
 	add_action('profile_update', 'members_only_reset_feedkey');
 }
 
-
-
-/****************** END OF MEMBERS ONLY PLUGIN      *****************/
+?>
