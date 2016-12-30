@@ -87,3 +87,25 @@ if ( !defined('ABSPATH') )
 
 /** Sets up WordPress vars and included files. */
 require_once(ABSPATH . 'wp-settings.php');
+
+
+
+/*
+TODO
+* CREATE EXAM Schedule ---done
+* create default posts on user creation
+* Fix user status
+* List file name by label ---done
+
+
+
+
+
+CHANGES TO MAKE IN files
+* ring scheduler page links static
+* reload link  after copying schedule Sets
+
+
+
+
+*/

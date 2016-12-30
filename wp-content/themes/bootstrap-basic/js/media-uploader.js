@@ -25,8 +25,8 @@
                 attachment = file_frame.state().get('selection').first().toJSON();
 
                 // do something with the file here
-                $( '#frontend-button' ).hide();
-                $( '#frontend-image' ).attr('src', attachment.url);
+                // $( '#frontend-button' ).hide();
+                // $( '#frontend-image' ).attr('src', attachment.url);
             });
 
             file_frame.open();

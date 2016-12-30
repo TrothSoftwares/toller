@@ -228,7 +228,7 @@ add_filter('upload_mimes','restict_mime');
 function restict_mime($mimes) {
     $mimes = array(
 
-                'mp3' => 'image/mp3',
+                'mp3' => 'audio/mp3',
 
     );
     return $mimes;
